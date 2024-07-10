@@ -2,8 +2,8 @@
 ## Resources
 # Read or watch:
 
-MySQL cheatsheet
-MySQL Performance: How To Leverage MySQL Database Indexing
+.. MySQL cheatsheet
+.. MySQL Performance: How To Leverage MySQL Database Indexing
 Stored Procedure
 Triggers
 Views

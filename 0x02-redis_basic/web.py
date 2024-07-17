@@ -1,34 +1,31 @@
 #!/usr/bin/env python3
-"""Implement a simple cache decorator using Redis."""
-import requests
+""" implement simple cache decorator using redis """
 import redis
+import requests
 from functools import wraps
 from typing import Callable
 
-# Initialize Redis connection
-db = redis.Redis(host='localhost', port=6379, db=0)
 
-def cache(method: Callable) -> Callable:
-    """A decorator to cache get_page results."""
+redis_cl = redis.Redis()
+
+
+def data_cacher(method: Callable) -> Callable:
+    """ Caches the output """
     @wraps(method)
-    def wrapper(url: str) -> str:
-        """Wrapper function to cache get_page results."""
-        # Increment the access count for the URL
-        db.incr(f'count:{url}')
-
-        # Check if the content is already cached
-        cached_content = db.get(f'content:{url}')
-        if cached_content:
-            return cached_content.decode('utf-8')
-
-        # Fetch the content and cache it
-        content = method(url)
-        db.setex(f'content:{url}', 10, content)
-        return content
+    def wrapper(url) -> str:
+        """ wrapper function """
+        redis_cl.incr(f'count:{url}')
+        result = redis_cl.get(f'result:{url}')
+        if result:
+            return result.decode('utf-8')
+        result = method(url)
+        redis_cl.set(f'count:{url}', 0)
+        redis_cl.setex(f'result:{url}', 10, result)
+        return result
     return wrapper
 
-@cache
+
+@data_cacher
 def get_page(url: str) -> str:
-    """Fetch the content of a page using its URL."""
-    response = requests.get(url)
-    return response.text
+    """ Returns the content of a URL """
+    return requests.get(url).text

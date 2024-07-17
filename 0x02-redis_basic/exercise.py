@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ Module declares a redis class and methods """
 import redis
-from uuid import uuid4
+import uuid
 from typing import Union, Callable, Optional
 from functools import wraps
 
@@ -58,7 +58,7 @@ class Cache:
     @count_calls
     def store(self, data: DataTypes) -> str:
         """ takes a data argument and returns a string """
-        ar_key = str(uuid())
+        ar_key = str(uuid.uuid1())
         self._redis.set(ar_key, data)
         return ar_key
 

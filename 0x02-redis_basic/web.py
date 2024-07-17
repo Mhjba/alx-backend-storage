@@ -1,54 +1,34 @@
 #!/usr/bin/env python3
-"""
-Module to provide a cache decorator for web page retrieval.
-"""
-
+"""Implement a simple cache decorator using Redis."""
 import requests
 import redis
+from functools import wraps
 from typing import Callable
 
-redis_client = redis.Redis()
+# Initialize Redis connection
+db = redis.Redis(host='localhost', port=6379, db=0)
 
+def cache(method: Callable) -> Callable:
+    """A decorator to cache get_page results."""
+    @wraps(method)
+    def wrapper(url: str) -> str:
+        """Wrapper function to cache get_page results."""
+        # Increment the access count for the URL
+        db.incr(f'count:{url}')
 
-def cache_decorator(func: Callable) -> Callable:
-    """
-    Decorator to cache the result of a function
-    with a specified expiration time.
-    """
-    def wrapper(*args, **kwargs):
-        """
-        Generate a cache key based on the function name and arguments
-        """
-        cache_key = f"cache:{func.__name__}:{args}"
+        # Check if the content is already cached
+        cached_content = db.get(f'content:{url}')
+        if cached_content:
+            return cached_content.decode('utf-8')
 
-        cached_result = redis_client.get(cache_key)
-        if cached_result:
-            return cached_result.decode('utf-8')
-
-        result = func(*args, **kwargs)
-
-        redis_client.setex(cache_key, 10, result)
-
-        return result
-
+        # Fetch the content and cache it
+        content = method(url)
+        db.setex(f'content:{url}', 10, content)
+        return content
     return wrapper
 
-
-@cache_decorator
+@cache
 def get_page(url: str) -> str:
-    """
-    Get the HTML content of a particular URL
-    and cache the result with an expiration time of 10 seconds.
-    """
-    redis_client.incr(f"count:{url}")
-
-    cached_data = redis_client.get(url)
-    if cached_data:
-        return cached_data.decode('utf-8')
-
+    """Fetch the content of a page using its URL."""
     response = requests.get(url)
-    html_content = response.text
-
-    redis_client.setex(url, 10, html_content)
-
-    return html_content
+    return response.text

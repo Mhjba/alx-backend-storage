@@ -4,13 +4,59 @@ Main file
 """
 import redis
 
-Cache = __import__('exercise').Cache
-
+CacheModule = __import__('exercise')
+Cache = CacheModule.Cache
+replay = CacheModule.replay
 cache = Cache()
 
+# Task 0
 data = b"hello"
 key = cache.store(data)
 print(key)
 
 local_redis = redis.Redis()
 print(local_redis.get(key))
+
+# Task 1
+TEST_CASES = {
+    b"foo": None,
+    123: int,
+    "bar": lambda d: d.decode("utf-8")
+}
+
+for value, fn in TEST_CASES.items():
+    key = cache.store(value)
+    assert cache.get(key, fn=fn) == value
+
+# Test cases for get_str and get_int
+key = cache.store(b"hello")
+assert cache.get_str(key) == "hello"
+key = cache.store(123)
+assert cache.get_int(key) == 123
+
+# Task 2
+cache.store(b"first")
+print(cache.get(cache.store.__qualname__))
+
+cache.store(b"second")
+cache.store(b"third")
+print(cache.get(cache.store.__qualname__))
+
+# Task 3
+s1 = cache.store("first")
+print(s1)
+s2 = cache.store("secont")
+print(s2)
+s3 = cache.store("third")
+print(s3)
+
+inputs = cache._redis.lrange(
+        "{}:inputs".format(cache.store.__qualname__), 0, -1)
+outputs = cache._redis.lrange(
+        "{}:outputs".format(cache.store.__qualname__), 0, -1)
+
+print("inputs: {}".format(inputs))
+print("outputs: {}".format(outputs))
+
+# Task 4
+replay(cache.store)

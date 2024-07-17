@@ -79,9 +79,9 @@ class Cache:
         return v
 
     def get_str(self, key: str) -> str:
-            """ get data from cache as string """
-            return self.get(key, lambda d: d.decode('utf-8'))
+        """ get data from cache as string """
+        return self.get(key, lambda d: d.decode('utf-8'))
 
     def get_int(self, key: str) -> int:
-            """ get data from cache as integer """
-            return self.get(key, int)
+        """ get data from cache as integer """
+        return self.get(key, int)

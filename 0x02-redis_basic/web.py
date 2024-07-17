@@ -29,3 +29,7 @@ def data_cacher(method: Callable) -> Callable:
 def get_page(url: str) -> str:
     """ Returns the content of a URL """
     return requests.get(url).text
+
+if __name__ == "__main__":
+    # Example usage
+    test_url = "http://slowwly.robertomurray.co.uk

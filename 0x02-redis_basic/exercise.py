@@ -37,7 +37,7 @@ def replay(fn: Callable):
     fun_name = fn.__qualname__
     call = db.get(fun_name)
     try:
-        call = int(c.decode("utf-8"))
+        call = int(call.decode("utf-8"))
     except Exception:
         call = 0
     print("{} was called {} times:".format(fun_name, call))
